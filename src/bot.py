@@ -1,4 +1,3 @@
-from variavel import username, senha
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -12,8 +11,8 @@ load_dotenv('src/.env')
 
 class Bot:
     def __init__(self, qnt_prec):
-        self.username = os.environ.get('USERNAME')
-        self.senha = os.environ.get('SENHA')
+        self.username = os.environ.get('LOGIN')
+        self.senha = os.environ.get('PASSWORD')
         self.url = os.environ.get('URL')
         print(self.url)
         self.qnt_prec = qnt_prec
@@ -29,10 +28,10 @@ class Bot:
         self.driver.switch_to.frame(iframe)
 
         login_input = self.driver.find_element(By.ID, 'username')
-        login_input.send_keys(username)
+        login_input.send_keys(self.username)
 
         password_input = self.driver.find_element(By.ID, 'password')
-        password_input.send_keys(senha)
+        password_input.send_keys(self.senha)
 
         login_button = self.driver.find_element(By.ID, 'kc-login')
         login_button.click()
@@ -79,9 +78,11 @@ class Bot:
 
             # seach process
             process_input = WebDriverWait(self.driver, 2).until(
-                EC.presence_of_element_located((By.XPATH, "//input[@id='fPP:j_id252:classeJudicial']"))
+                EC.presence_of_element_located(
+                    (By.XPATH, "//input[@id='fPP:j_id252:classeJudicial']"))
             )
-            process_input.send_keys('CUMPRIMENTO DE SENTENÇA CONTRA A FAZENDA PÚBLICA')
+            process_input.send_keys(
+                'CUMPRIMENTO DE SENTENÇA CONTRA A FAZENDA PÚBLICA')
             print('search process')
 
             # click search button
