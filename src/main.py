@@ -50,6 +50,8 @@ class Menu():
                             print('Digite um número natual válido.')
 
                     bot = Bot(self.qnt_prec)
+
+                    
                     return bot.run()
                 
                 elif select == 2:
