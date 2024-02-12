@@ -44,14 +44,42 @@ class Menu():
         while self.select != 9:
             try:
                 print('1 - Coletar Precatórios')
-                print('2 - Ativar API')
+                print('2 - Ativar API - Desativado')
                 print('3 - Atualizar Credenciais')
-                print('9 - Encerrar')
+                print('0 - Encerrar')
                 if len(sys.argv) > 1:
                     select = int(sys.argv[1])
                     print('Opção desejada:', select)
                 else:
                     select = int(input('Opção desejada: '))
+
+                if select == 1 or select == 2:
+                    self.activate_format('Seleção de Tribunal')
+                    tribunal = 0
+                    while tribunal not in [1, 3, 5, 6, 7]:
+                        try:
+                            tribunal = int(input('''Digite o número correspondente ao Tribunal que deseja coletar os Precatórios 
+1 - TRT 1ª Região
+3 - TRT 3ª Região
+5 - TRT 5ª Região
+6 - TRT 6ª Região
+7 - TJDF
+Escolha: '''))
+                            if tribunal not in [1, 3, 5, 6, 7]:
+                                print('Tribunal inválido, tente novamente.')
+                            else:
+                                if tribunal == 1:
+                                    URL = 'https://pje1g.trf1.jus.br/pje/login.seam' 
+                                elif tribunal == 3:
+                                    URL = 'https://pje1g.trf3.jus.br/pje/login.seam'
+                                elif tribunal == 5:
+                                    URL = 'https://pje1g.trf5.jus.br/pje/login.seam'
+                                elif tribunal == 6:
+                                    URL = 'https://pje1g.trf6.jus.br/pje/login.seam'
+                                else:
+                                    URL = 'https://pje.tjdft.jus.br/pje/login.seam'   
+                        except ValueError:
+                            self.wrong_option()
 
                 if select == 1:
                     self.activate_format('Iniciando coleta de Precatórios')
@@ -72,7 +100,7 @@ class Menu():
                         except ValueError:
                             print('Digite um número natual válido.')
                     continuation = True if continuation == '1' else False
-                    bot = Bot(self.qnt_prec, self.user_page, continuation)
+                    bot = Bot(self.qnt_prec, self.user_page, continuation, URL)
 
                     self.activate_format('Ativando Bot')
 
@@ -104,7 +132,7 @@ class Menu():
                     print('Credenciais atualizadas com sucesso!')
                     return
 
-                elif select == 9:
+                elif select == 0:
                     self.activate_format('Encerrando sistema')
                     return
                 

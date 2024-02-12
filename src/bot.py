@@ -19,10 +19,14 @@ load_dotenv('src/.env')
 
 
 class Bot:
-    def __init__(self, qnt_prec: int , user_page:int = 1, continuation: bool = False):
+    def __init__(
+            self, qnt_prec: int,
+            user_page:int = 1,
+            continuation: bool = False,
+            URL:str = os.environ.get('URL')):
         self.username = os.environ.get('LOGIN')
         self.senha = os.environ.get('PASSWORD')
-        self.url = os.environ.get('URL')
+        self.url = URL
         self.qnt_prec = qnt_prec
         self.driver = webdriver.Chrome()
         self.classe = os.environ.get('CLASSE')
