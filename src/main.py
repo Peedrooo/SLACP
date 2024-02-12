@@ -29,6 +29,7 @@ class Menu():
     def init(self):
         self.initial()
         self.qnt_prec = 0
+        self.user_page = 0
         while self.select != 3:
             try:
                 print('1 - Coletar Precatórios')
@@ -43,16 +44,26 @@ class Menu():
                 if select == 1:
                     self.activate_format('Iniciando coleta de Precatórios')
 
-                    while self.qnt_prec <= 0:
+                    while self.qnt_prec == 0:
                         try:
                             self.qnt_prec = int(input('Digite a quantidade de Precatórios que deseja coletar: '))
                         except ValueError:
                             print('Digite um número natual válido.')
 
-                    bot = Bot(self.qnt_prec)
+                    while self.user_page == 0:
+                        try:
+                            self.user_page = int(input('Digite a página que deseja iniciar a coleta: '))
+                        except ValueError:
+                            print('Digite um número natual válido.')
 
-                    
-                    return bot.run()
+                    bot = Bot(self.qnt_prec, self.user_page)
+
+                    self.activate_format('Ativando Bot')
+
+                    print(bot.run())
+                    self.activate_format('Encerrando sistema')
+
+                    return 
                 
                 elif select == 2:
                     self.activate_format('Ativando API')
