@@ -20,17 +20,18 @@ load_dotenv('src/.env')
 
 class Bot:
     def __init__(
-            self, qnt_prec: int,
-            user_page:int = 1,
-            continuation: bool = False,
-            URL:str = os.environ.get('URL')):
+        self, qnt_prec: int,
+        user_page:int = 1,
+        continuation: bool = False,
+        URL:str = os.environ.get('URL')):
+
         self.username = os.environ.get('LOGIN')
         self.senha = os.environ.get('PASSWORD')
         self.url = URL
         self.qnt_prec = qnt_prec
         self.driver = webdriver.Chrome()
         self.classe = os.environ.get('CLASSE')
-        self.Págination = 1
+        self.pagination = 1
         self.user_page = user_page
         self.first_load = True
         self.continuation = continuation
@@ -108,19 +109,19 @@ class Bot:
         print('RECUPERAÇÃO')
         self.driver.switch_to.window(self.driver.window_handles[0])
         process = pd.DataFrame(columns=[
-            'Numero', 'Nome',  'Link', 'Precatório','Página'
+            'Numero', 'Nome', 'Polo Passivo', 'Link', 'Precatório','Página'
         ])
 
         sleep(11) if self.first_load else None
         self.first_load = False
 
-        while self.Págination < self.user_page:
+        while self.pagination < self.user_page:
             next_button = WebDriverWait(self.driver, 10).until(
                 EC.element_to_be_clickable(
                     (By.XPATH, "//td[normalize-space()='»']"))
             )
             next_button.click()
-            self.Págination += 1
+            self.pagination += 1
             sleep(3)
 
         tabela = WebDriverWait(self.driver, 10).until(
@@ -146,9 +147,11 @@ class Bot:
                     numero = coluna.text
                 elif e == 6:
                     nome = coluna.text
+                elif e == 8:
+                    polo_passivo = coluna.text
 
             line.append({
-                'Numero': numero, 'Nome': nome
+                'Numero': numero, 'Nome': nome, "Polo Passivo": polo_passivo,
             })
 
         page = pd.DataFrame(line)
@@ -209,12 +212,12 @@ class Bot:
                         e, process.columns.get_loc('Precatório')
                     ] = False
                     continue
-                finally:
-                    process.iloc[
-                        e, process.columns.get_loc('Página')
-                    ] = self.Págination
+                
+                process.iloc[
+                    e, process.columns.get_loc('Página')
+                ] = self.pagination
 
-                    self.driver.close()
+                self.driver.close()
 
             buffer = PostProcesser(process).run()
             result = pd.concat([result, buffer], ignore_index=True)

@@ -1,7 +1,6 @@
 import sys
 from bot import Bot
 import pandas as pd
-import os
 
 class Menu():
 
