@@ -30,7 +30,10 @@ class Menu():
     def verify_file(self):
         try:
             df = pd.read_excel('precatorios.xlsx')
-            last_page = max(df['Página'])
+            try:
+                last_page = max(df['Página'])
+            except Exception:
+                last_page = 1
             return last_page
         except FileNotFoundError:
             return False
@@ -58,10 +61,10 @@ class Menu():
                     while tribunal not in [1, 3, 5, 6, 7]:
                         try:
                             tribunal = int(input('''Digite o número correspondente ao Tribunal que deseja coletar os Precatórios 
-1 - TRT 1ª Região
-3 - TRT 3ª Região
-5 - TRT 5ª Região
-6 - TRT 6ª Região
+1 - TRF 1ª Região
+3 - TRF 3ª Região
+5 - TRF 5ª Região
+6 - TRF 6ª Região
 7 - TJDF
 Escolha: '''))
                             if tribunal not in [1, 3, 5, 6, 7]:
@@ -98,6 +101,7 @@ Escolha: '''))
                             self.user_page = int(input('Digite a página que deseja iniciar a coleta: '))
                         except ValueError:
                             print('Digite um número natual válido.')
+            
                     continuation = True if continuation == '1' else False
                     bot = Bot(self.qnt_prec, self.user_page, continuation, URL)
 

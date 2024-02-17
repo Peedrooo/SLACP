@@ -1,3 +1,4 @@
+import logging
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
@@ -10,7 +11,6 @@ import pandas as pd
 import warnings
 
 warnings.filterwarnings("ignore")
-import logging
 
 logging.basicConfig(level=logging.WARNING)
 
@@ -20,10 +20,10 @@ load_dotenv('src/.env')
 
 class Bot:
     def __init__(
-        self, qnt_prec: int,
-        user_page:int = 1,
-        continuation: bool = False,
-        URL:str = os.environ.get('URL')):
+            self, qnt_prec: int,
+            user_page: int = 1,
+            continuation: bool = False,
+            URL: str = os.environ.get('URL')):
 
         self.username = os.environ.get('LOGIN')
         self.senha = os.environ.get('PASSWORD')
@@ -109,7 +109,7 @@ class Bot:
         print('RECUPERAÇÃO')
         self.driver.switch_to.window(self.driver.window_handles[0])
         process = pd.DataFrame(columns=[
-            'Numero', 'Nome', 'Polo Passivo', 'Link', 'Precatório','Página'
+            'Numero', 'Nome', 'Polo Passivo', 'Link', 'Precatório', 'Página'
         ])
 
         sleep(11) if self.first_load else None
@@ -147,7 +147,7 @@ class Bot:
                     numero = coluna.text
                 elif e == 6:
                     nome = coluna.text
-                elif e == 8:
+                elif e == 7:
                     polo_passivo = coluna.text
 
             line.append({
@@ -162,7 +162,7 @@ class Bot:
 
     def check_prec(self):
         result = pd.DataFrame(columns=[
-            'Numero', 'Nome',  'Link', 'Precatório', 'Página'
+            'Numero', 'Nome', 'Página'
         ])
 
         while result.shape[0] < self.qnt_prec:
@@ -211,8 +211,6 @@ class Bot:
                     process.iloc[
                         e, process.columns.get_loc('Precatório')
                     ] = False
-                    continue
-                
                 process.iloc[
                     e, process.columns.get_loc('Página')
                 ] = self.pagination
@@ -238,6 +236,7 @@ class Bot:
         process = self.check_prec()
         return process
 
+
 if __name__ == '__main__':
-    bot = Bot(1)
+    bot = Bot(2)
     bot.run()
