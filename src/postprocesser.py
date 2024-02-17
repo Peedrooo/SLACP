@@ -5,7 +5,7 @@ class PostProcesser:
     def process(self):
         try:
             df = self.data
-            df = df[df['Precatório']][['Numero', 'Nome', 'Precatório']]
+            df = df[df['Precatório']][['Numero', 'Nome','Polo Passivo','Página']]
             return df
         except:
             return None
