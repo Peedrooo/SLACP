@@ -1,7 +1,7 @@
 import sys
 from bot import Bot
 import pandas as pd
-from resources import tribunais
+from resources import tribunais, clean_terminal
 
 
 class Menu():
@@ -15,6 +15,7 @@ class Menu():
         print('-=' * 16)
 
     def initial(self):
+        clean_terminal()
         self.line()
         print('Seja Bem Vindo ao SLACP - Sistema L4 Ativos Coletor de Precatórios')
         self.line()
@@ -25,7 +26,7 @@ class Menu():
         self.small_line()
 
     def activate_format(self, service):
-        print()
+        clean_terminal()
         self.small_line()
         print(service)
         self.small_line()
@@ -33,17 +34,17 @@ class Menu():
 
     def verify_file(self):
         try:
-            df = pd.read_excel('precatorios.xlsx')
+            df = pd.read_excel('buffer.xlsx')
             try:
                 last_page = max(df['Página'])
             except Exception:
-                last_page = 1
-            return last_page
+                return 1
+            return last_page + 1
         except FileNotFoundError:
             return False
 
     def init(
-        self, qnt_prec=0, user_page=0,
+        self, qnt_prec=0, user_page='0',
         continuation=False, URL=tribunais[1],
     ):
         self.initial()
@@ -112,7 +113,7 @@ class Menu():
                                 bot.close()
                                 bot = Bot(
                                     self.qnt_prec, self.user_page,
-                                    continuation, self.URL
+                                    True, self.URL
                                 )
                                 pass
 

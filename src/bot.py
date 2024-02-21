@@ -6,6 +6,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from dotenv import load_dotenv
 from time import sleep
 from postprocesser import PostProcesser
+from resources import clean_terminal
 import os
 import pandas as pd
 import warnings
@@ -18,7 +19,7 @@ logging.basicConfig(level=logging.WARNING)
 load_dotenv('src/.env')
 
 
-class Bot:
+class Bot():
     def __init__(
             self, qnt_prec: int,
             user_page: int = 1,
@@ -106,7 +107,8 @@ class Bot:
             self.search()
 
     def process_recover(self):
-        print('RECUPERAÇÃO')
+        clean_terminal()
+        print('-=RECUPERAÇÃO=-')
         self.driver.switch_to.window(self.driver.window_handles[0])
         process = pd.DataFrame(columns=[
             'Numero', 'Nome', 'Polo Passivo', 'Link', 'Precatório', 'Página'
@@ -157,7 +159,6 @@ class Bot:
         page = pd.DataFrame(line)
         process = pd.concat([process, page], ignore_index=True)
         process['Link'] = process_links
-
         return process
 
     def check_prec(self):
@@ -168,18 +169,28 @@ class Bot:
         while result.shape[0] < self.qnt_prec:
             process = self.process_recover()
             self.user_page += 1
+            windows = []
+            print('Precatórios encontrados:', result.shape[0])
+
             for row in process.iterrows():
                 link = row[1]['Link']
                 link.click()
                 alert = WebDriverWait(self.driver, 10).until(
                     EC.alert_is_present())
                 alert.accept()
+                sleep(0.3)
+                WebDriverWait(self.driver, 10).until(EC.new_window_is_opened)
+                windows.append(self.driver.window_handles[-1])
+
+                print('Página:', self.pagination, 'Processo:', row[1]['Numero'])
+            
+            print('Avaliando Processos...')
 
             WebDriverWait(self.driver, 10).until(
                 EC.number_of_windows_to_be(process.shape[0] + 1)
             )
 
-            for e, window in enumerate(self.driver.window_handles[1:]):
+            for e, window in enumerate(windows):
                 self.driver.switch_to.window(window)
                 self.driver.fullscreen_window()
 
@@ -216,17 +227,16 @@ class Bot:
                 ] = self.pagination
 
                 self.driver.close()
-
+    
+            process.to_excel('buffer.xlsx', index=False)
             buffer = PostProcesser(process).run()
             result = pd.concat([result, buffer], ignore_index=True)
             result = result.drop_duplicates(subset='Numero')
 
-            if self.continuation:
+            if self.continuation and os.path.exists('precatorios.xlsx'):
                 buffer = pd.read_excel('precatorios.xlsx')
                 result = pd.concat([result, buffer], ignore_index=True)
                 result = result.drop_duplicates(subset='Numero')
-
-            print('Precatórios encontrados:', result.shape[0])
 
             result.to_excel('precatorios.xlsx', index=False)
 
