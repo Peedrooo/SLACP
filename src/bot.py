@@ -27,9 +27,9 @@ class Bot:
 
         self.username = os.environ.get('LOGIN')
         self.senha = os.environ.get('PASSWORD')
+        self.driver = webdriver.Chrome()
         self.url = URL
         self.qnt_prec = qnt_prec
-        self.driver = webdriver.Chrome()
         self.classe = os.environ.get('CLASSE')
         self.pagination = 1
         self.user_page = user_page
@@ -112,7 +112,7 @@ class Bot:
             'Numero', 'Nome', 'Polo Passivo', 'Link', 'Precatório', 'Página'
         ])
 
-        sleep(11) if self.first_load else None
+        sleep(12) if self.first_load else None
         self.first_load = False
 
         while self.pagination < self.user_page:
@@ -122,7 +122,7 @@ class Bot:
             )
             next_button.click()
             self.pagination += 1
-            sleep(3)
+            sleep(3.5)
 
         tabela = WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.ID, "fPP:processosTable:tb"))
@@ -219,16 +219,21 @@ class Bot:
 
             buffer = PostProcesser(process).run()
             result = pd.concat([result, buffer], ignore_index=True)
-
-            print('Precatórios até o momento encontrados:', result.shape[0])
+            result = result.drop_duplicates(subset='Numero')
 
             if self.continuation:
                 buffer = pd.read_excel('precatorios.xlsx')
                 result = pd.concat([result, buffer], ignore_index=True)
+                result = result.drop_duplicates(subset='Numero')
+
+            print('Precatórios encontrados:', result.shape[0])
 
             result.to_excel('precatorios.xlsx', index=False)
 
         return result
+    
+    def close(self):
+        self.driver.quit()
 
     def run(self):
         self.login()
