@@ -1,6 +1,8 @@
 import sys
 from bot import Bot
 import pandas as pd
+from resources import tribunais
+
 
 class Menu():
 
@@ -23,9 +25,11 @@ class Menu():
         self.small_line()
 
     def activate_format(self, service):
+        print()
         self.small_line()
         print(service)
         self.small_line()
+        print()
 
     def verify_file(self):
         try:
@@ -38,118 +42,138 @@ class Menu():
         except FileNotFoundError:
             return False
 
-    def init(self):
+    def init(
+        self, qnt_prec=0, user_page=0,
+        continuation=False, URL=tribunais[1],
+    ):
         self.initial()
-        self.qnt_prec = 0
-        self.user_page = 0
+        self.qnt_prec = qnt_prec
+        self.select = 0
+        self.user_page = user_page
+        self.tribunal = 0
         self.file = self.verify_file()
-        while self.select != 9:
+        self.URL = URL
+        self.continuation = continuation
+
+        while True:
             try:
-                print('1 - Coletar Precatórios')
-                print('2 - Ativar API - Desativado')
-                print('3 - Atualizar Credenciais')
-                print('0 - Encerrar')
-                if len(sys.argv) > 1:
-                    select = int(sys.argv[1])
-                    print('Opção desejada:', select)
-                else:
-                    select = int(input('Opção desejada: '))
+                try:
+                    print('Para forçar o encerramento do sistema, pressione Ctrl + C')
+                    print('1 - Coletar Precatórios')
+                    print('2 - Preencher Contatos - Desativado')
+                    print('3 - Atualizar Credenciais')
+                    print('0 - Encerrar')
+                    if len(sys.argv) > 1:
+                        select = int(sys.argv[1])
+                        print('Opção desejada:', select)
+                    else:
+                        select = int(input('Opção desejada: '))
 
-                if select == 1 or select == 2:
-                    self.activate_format('Seleção de Tribunal')
-                    tribunal = 0
-                    while tribunal not in [1, 3, 5, 6, 7]:
-                        try:
-                            tribunal = int(input('''Digite o número correspondente ao Tribunal que deseja coletar os Precatórios 
-1 - TRF 1ª Região
-3 - TRF 3ª Região
-5 - TRF 5ª Região
-6 - TRF 6ª Região
-7 - TJDF
-Escolha: '''))
-                            if tribunal not in [1, 3, 5, 6, 7]:
-                                print('Tribunal inválido, tente novamente.')
-                            else:
-                                if tribunal == 1:
-                                    URL = 'https://pje1g.trf1.jus.br/pje/login.seam' 
-                                elif tribunal == 3:
-                                    URL = 'https://pje1g.trf3.jus.br/pje/login.seam'
-                                elif tribunal == 5:
-                                    URL = 'https://pje1g.trf5.jus.br/pje/login.seam'
-                                elif tribunal == 6:
-                                    URL = 'https://pje1g.trf6.jus.br/pje/login.seam'
-                                else:
-                                    URL = 'https://pje.tjdft.jus.br/pje/login.seam'   
-                        except ValueError:
-                            self.wrong_option()
+                    if select == 1:
+                        self.activate_format('Iniciando coleta de Precatórios')
 
-                if select == 1:
-                    self.activate_format('Iniciando coleta de Precatórios')
+                        while self.qnt_prec == 0:
+                            try:
+                                self.qnt_prec = int(
+                                    input('Digite a quantidade de Precatórios que deseja coletar: '))
+                            except ValueError:
+                                print('Digite um número natual válido.')
 
-                    while self.qnt_prec == 0:
-                        try:
-                            self.qnt_prec = int(input('Digite a quantidade de Precatórios que deseja coletar: '))
-                        except ValueError:
-                            print('Digite um número natual válido.')
+                        continuation = False
 
-                    if self.file:
-                        continuation = input('Observei que o programa estava em execução Anteriormente \nGostaria de continuar de onde parou? (1 - Sim, 2 - Não): ')
-                        self.user_page = self.file if continuation == '1' else '0'
+                        if self.file:
+                            continuation = input(
+                                'Observei que o programa estava em execução Anteriormente \nGostaria de continuar de onde parou? (1 - Sim, 2 - Não): ')
+                            self.user_page = self.file if continuation == '1' else '0'
 
-                    while self.user_page == '0':
-                        try:
-                            self.user_page = int(input('Digite a página que deseja iniciar a coleta: '))
-                        except ValueError:
-                            print('Digite um número natual válido.')
-            
-                    continuation = True if continuation == '1' else False
-                    bot = Bot(self.qnt_prec, self.user_page, continuation, URL)
+                        while self.user_page == '0':
+                            try:
+                                self.user_page = int(
+                                    input('Digite a página que deseja iniciar a coleta: '))
+                                if self.user_page == 0:
+                                    self.user_page = 1
+                            except ValueError:
+                                print('Digite um número natual válido.')
 
-                    self.activate_format('Ativando Bot')
+                        continuation = True if continuation == '1' else False
+                        bot = Bot(
+                            self.qnt_prec, self.user_page,
+                            continuation, self.URL
+                            )
 
-                    print(bot.run())
-                    self.activate_format('Encerrando sistema')
+                        self.activate_format('Ativando Bot')
 
-                    return 
-                
-                elif select == 2:
-                    self.activate_format('Ativando API')
-                    return
-                
-                elif select == 3:
-                    cpf = input('Digite o novo CPF: ')
-                    password = input('Digite a nova senha: ')
+                        while True:
+                            try:
+                                bot.run()
+                                break
+                            except Exception as error:
+                                self.activate_format('Erro Detectado - Reiniciando Bot')
+                                bot.close()
+                                bot = Bot(
+                                    self.qnt_prec, self.user_page,
+                                    continuation, self.URL
+                                )
+                                pass
 
-                    with open('src/.env', 'r') as file:
-                        lines = file.readlines()
+                        self.activate_format('Encerrando sistema')
+                        return
 
-                    for i in range(len(lines)):
-                        if lines[i].startswith('LOGIN='):
-                            lines[i] = f'LOGIN={cpf}\n'
-                        elif lines[i].startswith('PASSWORD='):
-                            lines[i] = f'PASSWORD={password}\n'
+                    elif select == 2:
+                        self.activate_format('Preenchendo Contatos')
+                        continue
 
-                    with open('src/.env', 'w') as file:
-                        file.writelines(lines)
+                    elif select == 3:
+                        cpf = input('Digite o novo CPF: ')
+                        password = input('Digite a nova senha: ')
 
-                    print('Credenciais atualizadas com sucesso!')
-                    return
+                        with open('src/.env', 'r') as file:
+                            lines = file.readlines()
 
-                elif select == 0:
-                    self.activate_format('Encerrando sistema')
-                    return
-                
-                else:
+                        for i in range(len(lines)):
+                            if lines[i].startswith('LOGIN='):
+                                lines[i] = f'LOGIN={cpf}\n'
+                            elif lines[i].startswith('PASSWORD='):
+                                lines[i] = f'PASSWORD={password}\n'
+
+                        with open('src/.env', 'w') as file:
+                            file.writelines(lines)
+
+                        print('Credenciais atualizadas com sucesso!')
+                        continue
+
+                    elif select == 0:
+                        self.activate_format('Encerrando sistema')
+                        return
+
+                    else:
+                        self.wrong_option()
+
+                except ValueError:
                     self.wrong_option()
+                    continue
 
-            except ValueError:
-                self.wrong_option()
-            
             except Exception as error:
-                print('Erro ao executar ação solicitada. Tente novamente.')
-                print('Erro:', error)
-                
+                print('\nErro Detectado:')
+                print('Reiniciando o sistema com as configurações anteriores...\n')
+                print(error)
+
 
 if __name__ == '__main__':
     menu = Menu()
-    menu.init()
+    while True:
+        try:
+            menu.init()
+            break
+        except Exception as error:
+            print('ERRO INESPERADO - contate o desenvolvedor')
+            print('ERRO: ',error, '\n')
+
+            fall = input(
+                'Gostaria de reiniciar o sistema? (1 - Sim, 2 - Não): '
+                )
+            
+            if fall == '2':
+                break
+            else:
+                continue
