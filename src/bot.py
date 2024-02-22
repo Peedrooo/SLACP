@@ -172,18 +172,16 @@ class Bot():
             windows = []
             print('Precatórios encontrados:', result.shape[0])
 
-            for row in process.iterrows():
+            for e, row in enumerate(process.iterrows()):
                 link = row[1]['Link']
                 link.click()
                 alert = WebDriverWait(self.driver, 10).until(
                     EC.alert_is_present())
                 alert.accept()
-                sleep(0.3)
-                WebDriverWait(self.driver, 10).until(EC.new_window_is_opened)
+                sleep(2)
                 windows.append(self.driver.window_handles[-1])
 
                 print('Página:', self.pagination, 'Processo:', row[1]['Numero'])
-            
             print('Avaliando Processos...')
 
             WebDriverWait(self.driver, 10).until(

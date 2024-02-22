@@ -2,7 +2,8 @@ import sys
 from bot import Bot
 import pandas as pd
 from resources import tribunais, clean_terminal
-
+from time import sleep
+import os
 
 class Menu():
 
@@ -42,12 +43,17 @@ class Menu():
             return last_page + 1
         except FileNotFoundError:
             return False
+    
+    def clean_buffer(self):
+        try:
+            os.remove('buffer.xlsx')
+        except FileNotFoundError:
+            pass
 
     def init(
         self, qnt_prec=0, user_page='0',
         continuation=False, URL=tribunais[1],
     ):
-        self.initial()
         self.qnt_prec = qnt_prec
         self.select = 0
         self.user_page = user_page
@@ -59,10 +65,12 @@ class Menu():
         while True:
             try:
                 try:
+                    self.initial()
                     print('Para forçar o encerramento do sistema, pressione Ctrl + C')
                     print('1 - Coletar Precatórios')
                     print('2 - Preencher Contatos - Desativado')
                     print('3 - Atualizar Credenciais')
+                    print('4 - Limpar Buffer')
                     print('0 - Encerrar')
                     if len(sys.argv) > 1:
                         select = int(sys.argv[1])
@@ -93,6 +101,7 @@ class Menu():
                                     input('Digite a página que deseja iniciar a coleta: '))
                                 if self.user_page == 0:
                                     self.user_page = 1
+
                             except ValueError:
                                 print('Digite um número natual válido.')
 
@@ -105,14 +114,22 @@ class Menu():
                         self.activate_format('Ativando Bot')
 
                         while True:
+                            
                             try:
                                 bot.run()
                                 break
                             except Exception as error:
                                 self.activate_format('Erro Detectado - Reiniciando Bot')
+                                
                                 bot.close()
+                                
+                                if self.verify_file() < int(self.user_page):
+                                    self.file = int(self.user_page)
+                                else:
+                                    self.file = self.verify_file()
+                                
                                 bot = Bot(
-                                    self.qnt_prec, self.user_page,
+                                    self.qnt_prec, self.file,
                                     True, self.URL
                                 )
                                 pass
@@ -121,26 +138,41 @@ class Menu():
                         return
 
                     elif select == 2:
-                        self.activate_format('Preenchendo Contatos')
+                        self.activate_format('Função Não Disponível no Momento')
+                        sleep(2)
                         continue
 
                     elif select == 3:
+                        self.activate_format('Atualizando Credenciais')
+
                         cpf = input('Digite o novo CPF: ')
                         password = input('Digite a nova senha: ')
 
-                        with open('src/.env', 'r') as file:
-                            lines = file.readlines()
+                        salvar = input('Deseja salvar as novas credenciais? (1 - Sim, 2 - Não): ')
+                        if salvar == '1':
+                            with open('src/.env', 'r') as file:
+                                lines = file.readlines()
 
-                        for i in range(len(lines)):
-                            if lines[i].startswith('LOGIN='):
-                                lines[i] = f'LOGIN={cpf}\n'
-                            elif lines[i].startswith('PASSWORD='):
-                                lines[i] = f'PASSWORD={password}\n'
+                            for i in range(len(lines)):
+                                if lines[i].startswith('LOGIN='):
+                                    lines[i] = f'LOGIN={cpf}\n'
+                                elif lines[i].startswith('PASSWORD='):
+                                    lines[i] = f'PASSWORD={password}\n'
 
-                        with open('src/.env', 'w') as file:
-                            file.writelines(lines)
+                            with open('src/.env', 'w') as file:
+                                file.writelines(lines)
 
-                        print('Credenciais atualizadas com sucesso!')
+                            print('Credenciais atualizadas com sucesso!')
+                        else:
+                            print('Credenciais não atualizadas.')
+
+                        sleep(2)
+                        continue
+
+                    elif select == 4:
+                        self.activate_format('Limpando Buffer')
+                        self.clean_buffer()
+                        sleep(2)
                         continue
 
                     elif select == 0:
@@ -149,9 +181,12 @@ class Menu():
 
                     else:
                         self.wrong_option()
+                        sleep(2)
+                        continue
 
                 except ValueError:
                     self.wrong_option()
+                    sleep(2)
                     continue
 
             except Exception as error:
