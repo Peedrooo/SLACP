@@ -172,13 +172,14 @@ class Bot():
             windows = []
             print('Precatórios encontrados:', result.shape[0])
 
-            for e, row in enumerate(process.iterrows()):
+            for row in process.iterrows():
                 link = row[1]['Link']
                 link.click()
                 alert = WebDriverWait(self.driver, 10).until(
                     EC.alert_is_present())
                 alert.accept()
                 sleep(2)
+                WebDriverWait(self.driver, 10).until(EC.new_window_is_opened)
                 windows.append(self.driver.window_handles[-1])
 
                 print('Página:', self.pagination, 'Processo:', row[1]['Numero'])
@@ -225,7 +226,7 @@ class Bot():
                 ] = self.pagination
 
                 self.driver.close()
-    
+
             process.to_excel('buffer.xlsx', index=False)
             buffer = PostProcesser(process).run()
             result = pd.concat([result, buffer], ignore_index=True)
@@ -249,7 +250,6 @@ class Bot():
         process = self.check_prec()
         return process
 
-
 if __name__ == '__main__':
-    bot = Bot(2)
+    bot = Bot(2, user_page = 7)
     bot.run()
