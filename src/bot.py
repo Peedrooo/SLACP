@@ -3,10 +3,9 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from dotenv import load_dotenv
 from time import sleep
 from postprocesser import PostProcesser
-from resources import clean_terminal
+from resources import clean_terminal, URL, LOGIN, PASSWORD, CLASSE
 import os
 import pandas as pd
 import warnings
@@ -16,26 +15,25 @@ warnings.filterwarnings("ignore")
 logging.basicConfig(level=logging.WARNING)
 
 
-load_dotenv('src/.env')
-
-
 class Bot():
     def __init__(
             self, qnt_prec: int,
             user_page: int = 1,
             continuation: bool = False,
-            URL: str = os.environ.get('URL')):
+            URL: str = URL,
+            key: str = 'Precatório'):
 
-        self.username = os.environ.get('LOGIN')
-        self.senha = os.environ.get('PASSWORD')
+        self.username = LOGIN
+        self.senha = PASSWORD
         self.driver = webdriver.Chrome()
         self.url = URL
         self.qnt_prec = qnt_prec
-        self.classe = os.environ.get('CLASSE')
+        self.classe = CLASSE
         self.pagination = 1
         self.user_page = user_page
         self.first_load = True
         self.continuation = continuation
+        self.keyword = key
 
     def login(self):
         print('LOGIN')
@@ -198,7 +196,7 @@ class Bot():
                         (By.ID, 'divTimeLine:txtPesquisa')
                     )
                 )
-                search_box.send_keys('precatório')
+                search_box.send_keys(self.keyword)
 
                 WebDriverWait(self.driver, 10).until(
                     EC.element_to_be_clickable(

@@ -3,6 +3,7 @@ from bot import Bot
 import pandas as pd
 from resources import tribunais, clean_terminal
 from time import sleep
+from date import dia_mes    
 import os
 
 class Menu():
@@ -80,6 +81,8 @@ class Menu():
 
                     if select == 1:
                         self.activate_format('Iniciando coleta de Precatórios')
+                        
+                        key = input('Por qual palavra chave deseja buscar os Precatórios? ')
 
                         while self.qnt_prec == 0:
                             try:
@@ -108,7 +111,8 @@ class Menu():
                         continuation = True if continuation == '1' else False
                         bot = Bot(
                             self.qnt_prec, self.user_page,
-                            continuation, self.URL
+                            continuation, URL = self.URL,
+                            key = key
                             )
 
                         self.activate_format('Ativando Bot')
@@ -120,7 +124,6 @@ class Menu():
                                 break
                             except Exception as error:
                                 self.activate_format('Erro Detectado - Reiniciando Bot')
-                                
                                 bot.close()
                                 
                                 if self.verify_file() < int(self.user_page):
@@ -130,7 +133,8 @@ class Menu():
                                 
                                 bot = Bot(
                                     self.qnt_prec, self.file,
-                                    True, self.URL
+                                    True, self.URL,
+                                    key = key
                                 )
                                 pass
 
@@ -150,7 +154,7 @@ class Menu():
 
                         salvar = input('Deseja salvar as novas credenciais? (1 - Sim, 2 - Não): ')
                         if salvar == '1':
-                            with open('src/.env', 'r') as file:
+                            with open('src/resources.py', 'r') as file:
                                 lines = file.readlines()
 
                             for i in range(len(lines)):
@@ -159,7 +163,7 @@ class Menu():
                                 elif lines[i].startswith('PASSWORD='):
                                     lines[i] = f'PASSWORD={password}\n'
 
-                            with open('src/.env', 'w') as file:
+                            with open('src/resources.py', 'w') as file:
                                 file.writelines(lines)
 
                             print('Credenciais atualizadas com sucesso!')
@@ -196,20 +200,26 @@ class Menu():
 
 
 if __name__ == '__main__':
-    menu = Menu()
-    while True:
-        try:
-            menu.init()
-            break
-        except Exception as error:
-            print('ERRO INESPERADO - contate o desenvolvedor')
-            print('ERRO: ',error, '\n')
-
-            fall = input(
-                'Gostaria de reiniciar o sistema? (1 - Sim, 2 - Não): '
-                )
-            
-            if fall == '2':
+    dia, mes = dia_mes()
+    if dia > 15 and mes > 2:
+        print('Sistema Expirado')
+        sleep(3)
+        exit()
+    else:
+        menu = Menu()
+        while True:
+            try:
+                menu.init()
                 break
-            else:
-                continue
+            except Exception as error:
+                print('ERRO INESPERADO - contate o desenvolvedor')
+                print('ERRO: ',error, '\n')
+
+                fall = input(
+                    'Gostaria de reiniciar o sistema? (1 - Sim, 2 - Não): '
+                    )
+                
+                if fall == '2':
+                    break
+                else:
+                    continue
