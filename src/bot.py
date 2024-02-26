@@ -116,13 +116,19 @@ class Bot():
         self.first_load = False
 
         while self.pagination < self.user_page:
-            next_button = WebDriverWait(self.driver, 10).until(
-                EC.element_to_be_clickable(
-                    (By.XPATH, "//td[normalize-space()='»']"))
-            )
-            next_button.click()
-            self.pagination += 1
-            sleep(3.5)
+            try:
+                next_button = WebDriverWait(self.driver, 10).until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, "//td[normalize-space()='»']"))
+                )
+                next_button.click()
+                self.pagination += 1
+                sleep(3.5)
+            except:
+                clean_terminal()
+                print("-=RECUPERAÇÃO=-")
+                sleep(3.5)
+
 
         tabela = WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.ID, "fPP:processosTable:tb"))
@@ -180,7 +186,8 @@ class Bot():
                 WebDriverWait(self.driver, 10).until(EC.new_window_is_opened)
                 windows.append(self.driver.window_handles[-1])
 
-                print('Página:', self.pagination, 'Processo:', row[1]['Numero'])
+                print('Página:', self.pagination,
+                      'Processo:', row[1]['Numero'])
             print('Avaliando Processos...')
 
             WebDriverWait(self.driver, 10).until(
@@ -209,7 +216,7 @@ class Bot():
                     WebDriverWait(self.driver, 2).until(
                         EC.presence_of_element_located(
                             (By.XPATH,
-                            "//span[@class='text-muted data-interna']")
+                             "//span[@class='text-muted data-interna']")
                         )
                     )
                     process.iloc[
@@ -238,7 +245,7 @@ class Bot():
             result.to_excel('precatorios.xlsx', index=False)
 
         return result
-    
+
     def close(self):
         self.driver.quit()
 
@@ -249,5 +256,5 @@ class Bot():
         return process
 
 if __name__ == '__main__':
-    bot = Bot(2, user_page = 7)
+    bot = Bot(2, user_page=500)
     bot.run()

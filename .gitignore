@@ -7,3 +7,4 @@ resources.py
 /bot
 /buffer
 assertiva.py
+*.zip
