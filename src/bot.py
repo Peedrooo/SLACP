@@ -115,6 +115,7 @@ class Bot():
         sleep(12) if self.first_load else None
         self.first_load = False
 
+        fall_pagination = 0
         while self.pagination < self.user_page:
             try:
                 next_button = WebDriverWait(self.driver, 10).until(
@@ -125,9 +126,14 @@ class Bot():
                 self.pagination += 1
                 sleep(3.5)
             except:
+                fall_pagination += 1
                 clean_terminal()
                 print("-=RECUPERAÇÃO=-")
+                print('Erro na paginação! Tentando novamente...')
+                print(fall_pagination)
                 sleep(3.5)
+                if fall_pagination > 150:
+                    break
 
 
         tabela = WebDriverWait(self.driver, 10).until(
@@ -256,5 +262,5 @@ class Bot():
         return process
 
 if __name__ == '__main__':
-    bot = Bot(2, user_page=500)
+    bot = Bot(2, user_page=4)
     bot.run()
