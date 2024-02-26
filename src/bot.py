@@ -130,7 +130,6 @@ class Bot():
                 clean_terminal()
                 print("-=RECUPERAÇÃO=-")
                 print('Erro na paginação! Tentando novamente...')
-                print(fall_pagination)
                 sleep(3.5)
                 if fall_pagination > 150:
                     break
