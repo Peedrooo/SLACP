@@ -38,12 +38,6 @@ class Bot():
     def login(self):
         print('LOGIN')
         self.driver.get(self.url)
-        WebDriverWait(self.driver, 10).until(
-            EC.presence_of_element_located((By.TAG_NAME, 'iframe'))
-        )
-        iframe = self.driver.find_element(By.TAG_NAME, 'iframe')
-
-        self.driver.switch_to.frame(iframe)
 
         login_input = self.driver.find_element(By.ID, 'username')
         login_input.send_keys(self.username)
@@ -51,7 +45,7 @@ class Bot():
         password_input = self.driver.find_element(By.ID, 'password')
         password_input.send_keys(self.senha)
 
-        login_button = self.driver.find_element(By.ID, 'kc-login')
+        login_button = self.driver.find_element(By.ID, 'btnEntrar')
         login_button.click()
 
         self.driver.switch_to.default_content()
@@ -115,24 +109,25 @@ class Bot():
         sleep(12) if self.first_load else None
         self.first_load = False
 
-        fall_pagination = 0
-        while self.pagination < self.user_page:
-            try:
-                next_button = WebDriverWait(self.driver, 10).until(
-                    EC.element_to_be_clickable(
-                        (By.XPATH, "//td[normalize-space()='»']"))
-                )
-                next_button.click()
-                self.pagination += 1
-                sleep(3.5)
-            except:
-                fall_pagination += 1
-                clean_terminal()
-                print("-=RECUPERAÇÃO=-")
-                print('Erro na paginação! Tentando novamente...')
-                sleep(3.5)
-                if fall_pagination > 150:
-                    break
+        # fall_pagination = 0
+        # while self.pagination < self.user_page:
+        #     try:
+        #         next_button = WebDriverWait(self.driver, 10).until(
+        #             EC.element_to_be_clickable(
+        #                 (By.XPATH, "//td[normalize-space()='»']"))
+        #         )
+        #         next_button.click()
+        #         self.pagination += 1
+        #         sleep(3.5)
+        #     except:
+        #         fall_pagination += 1
+        #         clean_terminal()
+        #         print("-=RECUPERAÇÃO=-")
+        #         print('Erro na paginação! Tentando novamente...')
+        #         sleep(3.5)
+        #         if fall_pagination > 150:
+        #             break
+        
 
 
         tabela = WebDriverWait(self.driver, 10).until(
