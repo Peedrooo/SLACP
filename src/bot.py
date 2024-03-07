@@ -38,14 +38,12 @@ class Bot():
     def login(self):
         print('LOGIN')
         self.driver.get(self.url)
-
+        self.driver.switch_to.frame(self.driver.find_element(By.ID, 'ssoFrame'))
         login_input = self.driver.find_element(By.ID, 'username')
         login_input.send_keys(self.username)
-
         password_input = self.driver.find_element(By.ID, 'password')
         password_input.send_keys(self.senha)
-
-        login_button = self.driver.find_element(By.ID, 'btnEntrar')
+        login_button = self.driver.find_element(By.ID, 'kc-login')
         login_button.click()
 
         self.driver.switch_to.default_content()
@@ -98,6 +96,20 @@ class Bot():
             self.login()
             self.search()
 
+    def go_to_page(self, page):
+        page_button = WebDriverWait(self.driver, 10).until(
+            EC.element_to_be_clickable(
+                (By.XPATH, "//td[normalize-space()='10']"))
+        )
+
+        new_onclick = f"Event.fire(this, 'rich:datascroller:onscroll', {{'page': '{page}'}});"
+        self.driver.execute_script(
+            "arguments[0].setAttribute('onclick', arguments[1])", page_button, new_onclick)
+        page_button.click()
+
+        self.pagination = page
+        sleep(2)
+
     def process_recover(self):
         clean_terminal()
         print('-=RECUPERAÇÃO=-')
@@ -106,29 +118,30 @@ class Bot():
             'Numero', 'Nome', 'Polo Passivo', 'Link', 'Precatório', 'Página'
         ])
 
-        sleep(12) if self.first_load else None
-        self.first_load = False
+        if self.first_load:
+            sleep(12)
+            self.go_to_page(self.user_page)
+            self.first_load = False
 
-        # fall_pagination = 0
-        # while self.pagination < self.user_page:
-        #     try:
-        #         next_button = WebDriverWait(self.driver, 10).until(
-        #             EC.element_to_be_clickable(
-        #                 (By.XPATH, "//td[normalize-space()='»']"))
-        #         )
-        #         next_button.click()
-        #         self.pagination += 1
-        #         sleep(3.5)
-        #     except:
-        #         fall_pagination += 1
-        #         clean_terminal()
-        #         print("-=RECUPERAÇÃO=-")
-        #         print('Erro na paginação! Tentando novamente...')
-        #         sleep(3.5)
-        #         if fall_pagination > 150:
-        #             break
-        
+        fall_pagination = 0
 
+        while self.pagination < self.user_page:
+            try:
+                next_button = WebDriverWait(self.driver, 10).until(
+                    EC.element_to_be_clickable(
+                        (By.XPATH, "//td[normalize-space()='»']"))
+                )
+                next_button.click()
+                self.pagination += 1
+                sleep(3.5)
+            except:
+                fall_pagination += 1
+                clean_terminal()
+                print("-=RECUPERAÇÃO=-")
+                print('Erro na paginação! Tentando novamente...')
+                sleep(3.5)
+                if fall_pagination > 150:
+                    break
 
         tabela = WebDriverWait(self.driver, 10).until(
             EC.presence_of_element_located((By.ID, "fPP:processosTable:tb"))
@@ -216,7 +229,7 @@ class Bot():
                     WebDriverWait(self.driver, 2).until(
                         EC.presence_of_element_located(
                             (By.XPATH,
-                             "//span[@class='text-muted data-interna']")
+                            "//span[@class='text-muted data-interna']")
                         )
                     )
                     process.iloc[
@@ -254,6 +267,7 @@ class Bot():
         self.search()
         process = self.check_prec()
         return process
+
 
 if __name__ == '__main__':
     bot = Bot(2, user_page=4)
