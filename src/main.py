@@ -151,18 +151,18 @@ class Menu():
 
                         cpf = input('Digite o novo CPF: ')
                         password = input('Digite a nova senha: ')
-
+                        cpf = f"'{cpf}'"
+                        password = f"'{password}'"
+                        
                         salvar = input('Deseja salvar as novas credenciais? (1 - Sim, 2 - Não): ')
                         if salvar == '1':
                             with open('src/resources.py', 'r') as file:
                                 lines = file.readlines()
-
                             for i in range(len(lines)):
-                                if lines[i].startswith('LOGIN='):
-                                    lines[i] = f'LOGIN={cpf}\n'
-                                elif lines[i].startswith('PASSWORD='):
-                                    lines[i] = f'PASSWORD={password}\n'
-
+                                if lines[i].startswith('LOGIN ='):
+                                    lines[i] = f'LOGIN = {cpf}\n'
+                                elif lines[i].startswith('PASSWORD ='):
+                                    lines[i] = f'PASSWORD = {password}\n'
                             with open('src/resources.py', 'w') as file:
                                 file.writelines(lines)
 
@@ -170,7 +170,7 @@ class Menu():
                         else:
                             print('Credenciais não atualizadas.')
 
-                        sleep(2)
+                        sleep(1)
                         continue
 
                     elif select == 4:
