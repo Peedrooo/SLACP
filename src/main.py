@@ -3,7 +3,7 @@ from bot import Bot
 import pandas as pd
 from resources import tribunais, clean_terminal
 from time import sleep
-from date import dia_mes    
+from assertiva import AssertivaApi    
 import os
 
 class Menu():
@@ -69,7 +69,7 @@ class Menu():
                     self.initial()
                     print('Para forçar o encerramento do sistema, pressione Ctrl + C')
                     print('1 - Coletar Precatórios')
-                    print('2 - Preencher Contatos - Desativado')
+                    print('2 - Preencher Contatos')
                     print('3 - Atualizar Credenciais')
                     print('4 - Limpar Buffer')
                     print('0 - Encerrar')
@@ -142,8 +142,14 @@ class Menu():
                         return
 
                     elif select == 2:
-                        self.activate_format('Função Não Disponível no Momento')
-                        sleep(2)
+                        self.activate_format('Preenchendo Contatos')
+                        sleep(1)
+                        assertiva = AssertivaApi()
+                        if not assertiva.error:
+                            assertiva.post_number_by_name()
+                        else:
+                            print('Erro ao conectar com a API da Assertiva')
+                            sleep(2)
                         continue
 
                     elif select == 3:
@@ -200,26 +206,20 @@ class Menu():
 
 
 if __name__ == '__main__':
-    dia, mes = dia_mes()
-    if dia > 15 and mes > 2:
-        print('Sistema Expirado')
-        sleep(3)
-        exit()
-    else:
-        menu = Menu()
-        while True:
-            try:
-                menu.init()
-                break
-            except Exception as error:
-                print('ERRO INESPERADO - contate o desenvolvedor')
-                print('ERRO: ',error, '\n')
+    menu = Menu()
+    while True:
+        try:
+            menu.init()
+            break
+        except Exception as error:
+            print('ERRO INESPERADO - contate o desenvolvedor')
+            print('ERRO: ',error, '\n')
 
-                fall = input(
-                    'Gostaria de reiniciar o sistema? (1 - Sim, 2 - Não): '
-                    )
-                
-                if fall == '2':
-                    break
-                else:
-                    continue
+            fall = input(
+                'Gostaria de reiniciar o sistema? (1 - Sim, 2 - Não): '
+                )
+            
+            if fall == '2':
+                break
+            else:
+                continue
